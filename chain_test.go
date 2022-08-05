@@ -10,6 +10,7 @@ import (
 	"cricchainsdk/crypto"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
 	"testing"
 	"time"
 )
@@ -126,16 +127,20 @@ func TestChain_TransferCric(t *testing.T) {
 	}
 	data.Address = decode
 	data.Recipient = toaddress
-	ac, err := hexutil.Decode("0x10")
+	//"0.0000000000001"
+	//"0.0000000000001"
+	fmt.Println(hexutil.Encode(big.NewInt(10000000).Bytes()))
+	amount, err := hexutil.Decode(hexutil.Encode(big.NewInt(1000000).Bytes()))
 	if err != nil {
 		return
 	}
-	fee, err := hexutil.Decode("0x05")
 	if err != nil {
 		return
 	}
-	data.Amount = ac
-	data.Fees = fee
+	if err != nil {
+		return
+	}
+	data.Amount = amount
 	data.Nonce = nonce + 1
 	data.InnerCodetype = 0
 	data.Timestamp = time.Now().Unix()
@@ -160,7 +165,7 @@ func TestChain_TransferCric(t *testing.T) {
 //获取交易详情
 func TestChain_TransactionInfo(t *testing.T) {
 	ch := TsNewChain()
-	info, err := ch.TransactionInfo("0x84dfc61a51a18319b79e9f4ef40a972b21740481c5d32344b69c16194b614620")
+	info, err := ch.TransactionInfo("0x8478b00a085bcbc3400bfc39e49bfc0f2402ca7ea8188b4ce63555901ddfe67c")
 	if err != nil {
 		return
 	}
