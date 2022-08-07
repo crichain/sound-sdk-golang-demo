@@ -10,7 +10,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"strings"
 )
 
@@ -29,7 +28,6 @@ func Sign(data []byte, prv *ecdsa.PrivateKey) string {
 	//for _, v := range aaaa {
 	//	str = fmt.Sprintf("%s%s", str, string(v))
 	//}
-	fmt.Println(hexutil.Encode(data))
 	sum256 := sha256.Sum256(data)
 	r, s, err := ecdsa.Sign(rand.Reader, prv, sum256[:])
 	if err != nil {

@@ -7,18 +7,18 @@
 package cricchainsdk
 
 import (
+	"cricchainsdk/chainproto"
 	"cricchainsdk/crypto"
+	"cricchainsdk/utils"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"math/big"
 	"testing"
-	"time"
 )
 
 //私钥:4e4e8c93e1774c4100a2edda3a11960551ba6f083672f88fdbd9863a7f66cbc9
 //公钥:2cbad470c3260b49a366d5010b6672ac21cacb91bd0def30cadb40a9c07ecd50b2353626338182a229902426e3dc947b6d57e841692e71c3be0a743f2cbe9d0f
 //地址:0x06e81b2bc890f56d496e9938f1a8769518496d24
-var Url = "http://172.16.60.138:3001"
+var Url = "http://test.open-api.crichain.cn"
 
 func TsNewChain() *Chain {
 	//加载私钥
@@ -33,125 +33,50 @@ func TsNewChain() *Chain {
 	}
 	return chain
 }
-func TestMint(t *testing.T) {
+
+//获取测试币
+func TestChain_GetChainFaucet(t *testing.T) {
 	chain := TsNewChain()
-	//marshal, err := protojson.Marshal(bbbb)
-	//if err != nil {
-	//	return
-	//}
-
-	//fmt.Println(marshal)
-	//hexs := hexutil.Encode(b)
-	//datas := map[string]interface{}{
-	//	"body":      data,
-	//	"signature": sign,
-	//}
-	//marshal, err := json.Marshal(datas)
-	//if err != nil {
-	//	return
-	//}
-	//encode := hexutil.Encode(marshal)
-	//fmt.Println(encode)
-	//marshal, err := json.Marshal(hexs)
-	//if err != nil {
-	//	return
-	//}
-
-	//sign := crypto.Sign(marshal, chain.Privatekey)
-
-	//实名认证
-	//auth, err := chain.PostRealAuth("邬建平", "230125198911254813", formaddress.String())
-	//if err != nil {
-	//	return
-	//}
-	//fmt.Println(auth)
-	//获取账户信息
-	account, err := chain.GetAccount()
+	faucet, err := chain.GetChainFaucet()
 	if err != nil {
 		return
 	}
-	fmt.Println(account)
-	//铸造
-	//mint, err := chain.Mint(common.HexToAddress("0x1bF569aC852d52605850DF5f28E8a038cCcFd330"), "10", "https://json.meta-world.com/asset/blockchain/metadata/zNBuLBkPFqkbyZfXoCKZ")
-	//if err != nil {
-	//	return
-	//}
-	//fmt.Println(mint)
-	//转账
-	//transfer, err := chain.SafeTransfer(formaddress, common.HexToAddress("0xff01929ed3e0019b5f146606effab315a8da6ef8"), "6")
-	//if err != nil {
-	//	return
-	//}
-	//fmt.Println(transfer)
-
-	////销毁
-	//burn, err := chain.Burn("6")
-	//if err != nil {
-	//	return
-	//}
-	//fmt.Println(burn)
-	//获取token
-	//uri, err := chain.TokenURI("10")
-	//if err != nil {
-	//	return
-	//}
-	//fmt.Println(uri)
-	//获取测试币
-	//faucet, err := chain.GetChainFaucet(formaddress)
-	//fmt.Println(faucet)
-	//if err != nil {
-	//	return
-	//}
-
+	fmt.Println(faucet)
 }
 
-//转账
+//转账cric
 func TestChain_TransferCric(t *testing.T) {
 
 	chain := TsNewChain()
 
-	account, err := chain.GetAccount()
-	if err != nil {
-		return
-	}
-	nonce := int64(account["data"].(map[string]interface{})["nonce"].(float64))
+	nonce, err := chain.GetNonce()
 
-	data := TransactionBody{}
-	decode, err := hexutil.Decode("0x06e81b2bc890f56d496e9938f1a8769518496d24")
+	data := chainproto.TransactionBody{}
+	decode, err := hexutil.Decode(chain.Address.String())
 	if err != nil {
 		return
 	}
-	toaddress, err := hexutil.Decode("0xff01929ed3e0019b5f146606effab315a8da6ef8")
+	toaddress, err := hexutil.Decode("0x61d4c124df65ba081992ff2a8c77c67a8b3cb77c")
 	if err != nil {
 		return
 	}
 	data.Address = decode
 	data.Recipient = toaddress
-	//"0.0000000000001"
-	//"0.0000000000001"
-	fmt.Println(hexutil.Encode(big.NewInt(10000000).Bytes()))
-	amount, err := hexutil.Decode(hexutil.Encode(big.NewInt(1000000).Bytes()))
-	if err != nil {
-		return
-	}
-	if err != nil {
-		return
-	}
-	if err != nil {
-		return
-	}
-	data.Amount = amount
-	data.Nonce = nonce + 1
-	data.InnerCodetype = 0
-	data.Timestamp = time.Now().Unix()
-	decodeString, err := hexutil.Decode("0x01")
-	if err != nil {
-		return
-	}
-	data.Version = decodeString
-	data.ChainId = 168
+	data.To = toaddress
 
-	info := TransactionInfo{
+	amount, err := hexutil.Decode(hexutil.Encode(utils.ToMoney("100").Bytes()))
+	if err != nil {
+		return
+	}
+
+	data.Amount = amount
+
+	data.Nonce = nonce
+	//1659696753084
+	//1659771382947
+	//data.InnerCodetype = 0
+
+	info := chainproto.TransactionInfo{
 		Body: &data,
 	}
 	cric, err := chain.TransferCric(&info)
@@ -162,6 +87,17 @@ func TestChain_TransferCric(t *testing.T) {
 
 }
 
+//获取用户信息
+func TestChain_GetAccount(t *testing.T) {
+	chain := TsNewChain()
+	account, err := chain.GetAccount()
+	if err != nil {
+		return
+	}
+	fmt.Println(account)
+}
+
+//0xf03430735b74da88073b12d22c63fc2c6659e2eddef62677604cc6cc7557e701
 //获取交易详情
 func TestChain_TransactionInfo(t *testing.T) {
 	ch := TsNewChain()
