@@ -7,6 +7,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.2.0
 	github.com/valyala/fasthttp v1.38.0
+	github.com/w3liu/go-common v0.0.0-20210108072342-826b2f3582be
 	google.golang.org/protobuf v1.26.0
 )
 

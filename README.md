@@ -27,74 +27,51 @@
 # 调用示例
 ### 创建实例
 ```
-  //加载私钥
-  toECDSA, err := crypto.HexToECDSA("4e4e8c93e1774c4100a2edda3a11960551ba6f083672f88fdbd9863a7f66cbc9")
-  if err != nil {
-  panic("加载私钥报错")
-  }
-  formaddress := crypto.PubkeyToAddress(toECDSA.PublicKey)
-  //调用链接,私钥及私钥地址
-  chain, err := NewChain(Url, toECDSA, formaddress)
-  if err != nil {
-  return nil
-  }
+  func TsNewChain() *Chain {
+	//加载私钥
+	toECDSA, err := crypto.HexToECDSA("4e4e8c93e1774c4100a2edda3a11960551ba6f083672f88fdbd9863a7f66cbc9")
+	if err != nil {
+		panic("加载私钥报错")
+	}
+	formaddress := crypto.PubkeyToAddress(toECDSA.PublicKey)
+	chain, err := NewChain(Url, toECDSA, formaddress)
+	if err != nil {
+		return nil
+	}
+	return chain
+}
 
 ```
 
-### 转账
+### 转账cric
 ```
-      //获取钱包
-      account, err := chain.GetAccount()
-      if err != nil {
-      return
-      }
-      //取到nonce加1
-      nonce := int64(account["data"].(map[string]interface{})["nonce"].(float64))
-      
-      data := TransactionBody{}
-      decode, err := hexutil.Decode("0x06e81b2bc890f56d496e9938f1a8769518496d24")
-      if err != nil {
-      return
-      }
-      toaddress, err := hexutil.Decode("0xff01929ed3e0019b5f146606effab315a8da6ef8")
-      if err != nil {
-      return
-      }
-      data.Address = decode
-      data.Recipient = toaddress
-      //"0.0000000000001"
-      //"0.0000000000001"
-      fmt.Println(hexutil.Encode(big.NewInt(10000000).Bytes()))
-      amount, err := hexutil.Decode(hexutil.Encode(big.NewInt(1000000).Bytes()))
-      if err != nil {
-      return
-      }
-      if err != nil {
-      return
-      }
-      if err != nil {
-      return
-      }
-      data.Amount = amount
-      data.Nonce = nonce + 1
-      data.InnerCodetype = 0
-      data.Timestamp = time.Now().Unix()
-      decodeString, err := hexutil.Decode("0x01")
-      if err != nil {
-      return
-      }
-      data.Version = decodeString
-      data.ChainId = 168
-      
-      info := TransactionInfo{
-      Body: &data,
-      }
-      cric, err := chain.TransferCric(&info)
-      fmt.Println(cric)
-      if err != nil {
-      return
-      }
-
+     
+	chain := TsNewChain()
+	data := chainproto.TransactionBody{}
+	decode, err := hexutil.Decode(chain.Address.String())
+	if err != nil {
+		return
+	}
+	toaddress, err := hexutil.Decode("0x61d4c124df65ba081992ff2a8c77c67a8b3cb77c")
+	if err != nil {
+		return
+	}
+	data.Address = decode
+	data.Recipient = toaddress
+	data.To = toaddress
+	amount, err := hexutil.Decode(hexutil.Encode(utils.ToMoney(1000).Bytes()))
+	if err != nil {
+		return
+	}
+	data.Amount = amount
+	info := chainproto.TransactionInfo{
+		Body: &data,
+	}
+	cric, err := chain.TransferCric(&info)
+	fmt.Println(cric)
+	if err != nil {
+		return
+	}
 ```
 ### 获取交易详情
 ```
@@ -103,4 +80,104 @@ info, err := chain.TransactionInfo("0x8478b00a085bcbc3400bfc39e49bfc0f2402ca7ea8
 		return
 	}
 	fmt.Println(info)
+```
+### 获取测试币
+```
+    chain := TsNewChain()
+	faucet, err := chain.GetChainFaucet()
+	if err != nil {
+		return
+	}
+	fmt.Println(faucet)
+```
+### 获取用户信息
+```go
+    chain := TsNewChain()
+	account, err := chain.GetAccount()
+	if err != nil {
+		return
+	}
+	fmt.Println(account)
+```
+### 铸造
+```go
+	chain := TsNewChain()
+	mint, err := chain.Mint("0xce7e273ed4081e6309664734dc7a162e2e20e6cd", "cbc657068a8e34d905cd7af6b06c9859133814a7", "https://ipfs.infura.io/ipfs/QmbApAkdkGj4jFu6Jr2thcNHraRBYJ7nEL7cvpabM7bLcK")
+	if err != nil {
+		return
+	}
+	fmt.Println(mint)
+```
+### 转账
+```go
+	chain := TsNewChain()
+	transfer, err := chain.SafeTransfer(common.HexToAddress("0x61d4c124df65ba081992ff2a8c77c67a8b3cb77c"), "0xce7e273ed4081e6309664734dc7a162e2e20e6cd", "cbc657068a8e34d905cd7af6b06c9859133814a7")
+	if err != nil {
+		return
+	}
+	fmt.Println(transfer)
+```
+### 销毁
+```go
+    chain := TsNewChain()
+	burn, err := chain.Burn("cbc657068a8e34d905cd7af6b06c9859133814a7", "0xce7e273ed4081e6309664734dc7a162e2e20e6cd")
+	if err != nil {
+		return
+	}
+	fmt.Println(burn)
+```
+
+### 获取token
+```go
+    chain := TsNewChain()
+	uri, err := chain.TokenURI("cbc657068a8e34d905cd7af6b06c9859133814a7", "0xce7e273ed4081e6309664734dc7a162e2e20e6cd")
+	if err != nil {
+		return
+	}
+	fmt.Println(uri)
+```
+
+### 添加白名单
+```go
+    chain := TsNewChain()
+	whilelist, err := chain.AddWhiteList(common.HexToAddress("0x61d4c124df65ba081992ff2a8c77c67a8b3cb77c"), "0xce7e273ed4081e6309664734dc7a162e2e20e6cd")
+	if err != nil {
+		return
+	}
+	fmt.Println(whilelist)
+```
+### 获取白名单
+```go
+    chain := TsNewChain()
+	list, err := chain.GetWhiteList("1", "0xce7e273ed4081e6309664734dc7a162e2e20e6cd")
+	if err != nil {
+		return
+	}
+	fmt.Println(list)
+```
+### inwhite
+```go
+    chain := TsNewChain()
+	inwhite, err := chain.InWhiteList(common.HexToAddress("0x61d4c124df65ba081992ff2a8c77c67a8b3cb77c"), "0xce7e273ed4081e6309664734dc7a162e2e20e6cd")
+	if err != nil {
+		return
+	}
+	fmt.Println(inwhite)
+```
+### 删除白名单
+```go
+    chain := TsNewChain()
+	inwhite, err := chain.DelWhiteList(common.HexToAddress("0x61d4c124df65ba081992ff2a8c77c67a8b3cb77c"), "0xce7e273ed4081e6309664734dc7a162e2e20e6cd")
+	if err != nil {
+		return
+	}
+	fmt.Println(inwhite)
+```
+### 授权
+```go
+    approval, err := TsNewChain().SetApprovalForAll(common.HexToAddress("0x61d4c124df65ba081992ff2a8c77c67a8b3cb77c"), true, "0xce7e273ed4081e6309664734dc7a162e2e20e6cd")
+	if err != nil {
+		return
+	}
+	fmt.Println(approval)
 ```

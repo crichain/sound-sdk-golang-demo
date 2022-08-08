@@ -19,10 +19,12 @@ type ChainAbi struct {
 	Abi abi.ABI
 }
 
-func AbiNew() (*ChainAbi, error) {
-	abiData, err := ioutil.ReadFile("abi.abi")
+func AbiNew(path string) (*ChainAbi, error) {
+	abiData, err := ioutil.ReadFile(path)
 	if err != nil {
+
 		fmt.Println("read file: ", err)
+		panic("read file:err")
 		return nil, err
 	}
 	contractABI, err := abi.JSON(bytes.NewReader(abiData))
@@ -45,6 +47,12 @@ func (abi *ChainAbi) SafeMint(address common.Address, tokenId *big.Int, url stri
 func (abi *ChainAbi) SafeTransfer(fromaddress common.Address, toaddress common.Address, tokenId *big.Int) ([]byte, error) {
 
 	return abi.Abi.Pack("safeTransfer", fromaddress, toaddress, tokenId)
+}
+
+//转账
+func (abi *ChainAbi) SafeTransferForm(fromaddress common.Address, toaddress common.Address, tokenId *big.Int) ([]byte, error) {
+
+	return abi.Abi.Pack("safeTransferFrom", fromaddress, toaddress, tokenId)
 }
 
 //销毁

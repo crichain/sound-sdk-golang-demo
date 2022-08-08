@@ -21,13 +21,14 @@ import (
 var Url = "http://test.open-api.crichain.cn"
 
 func TsNewChain() *Chain {
-	//加载私钥
+	//加载私钥b046347a995c3131c99fc5cf9e29ee4f7721e9b5ff06397df4eab597d08a9ef1
+	//d5bb8ed7884cb7dc64a4170035f30d5589720cb02c027d86c7ac436d0f85b58c
 	toECDSA, err := crypto.HexToECDSA("4e4e8c93e1774c4100a2edda3a11960551ba6f083672f88fdbd9863a7f66cbc9")
 	if err != nil {
 		panic("加载私钥报错")
 	}
 	formaddress := crypto.PubkeyToAddress(toECDSA.PublicKey)
-	chain, err := NewChain(Url, toECDSA, formaddress)
+	chain, err := NewChain(Url, toECDSA, formaddress, "abi.abi")
 	if err != nil {
 		return nil
 	}
@@ -48,9 +49,6 @@ func TestChain_GetChainFaucet(t *testing.T) {
 func TestChain_TransferCric(t *testing.T) {
 
 	chain := TsNewChain()
-
-	nonce, err := chain.GetNonce()
-
 	data := chainproto.TransactionBody{}
 	decode, err := hexutil.Decode(chain.Address.String())
 	if err != nil {
@@ -64,14 +62,12 @@ func TestChain_TransferCric(t *testing.T) {
 	data.Recipient = toaddress
 	data.To = toaddress
 
-	amount, err := hexutil.Decode(hexutil.Encode(utils.ToMoney("100").Bytes()))
+	amount, err := hexutil.Decode(hexutil.Encode(utils.ToMoney(1000).Bytes()))
 	if err != nil {
 		return
 	}
 
 	data.Amount = amount
-
-	data.Nonce = nonce
 	//1659696753084
 	//1659771382947
 	//data.InnerCodetype = 0
@@ -79,7 +75,7 @@ func TestChain_TransferCric(t *testing.T) {
 	info := chainproto.TransactionInfo{
 		Body: &data,
 	}
-	cric, err := chain.TransferCric(&info)
+	cric, err := chain.TransferCric(&info, "123123")
 	fmt.Println(cric)
 	if err != nil {
 		return
@@ -97,7 +93,6 @@ func TestChain_GetAccount(t *testing.T) {
 	fmt.Println(account)
 }
 
-//0xf03430735b74da88073b12d22c63fc2c6659e2eddef62677604cc6cc7557e701
 //获取交易详情
 func TestChain_TransactionInfo(t *testing.T) {
 	ch := TsNewChain()
@@ -106,4 +101,14 @@ func TestChain_TransactionInfo(t *testing.T) {
 		return
 	}
 	fmt.Println(info)
+}
+
+//实名认证
+func TestChain_PostRealAuth(t *testing.T) {
+	chain := TsNewChain()
+	auth, err := chain.PostRealAuth("邬建平", "230125198911254813", "0x06e81b2bc890f56d496e9938f1a8769518496d24")
+	if err != nil {
+		return
+	}
+	fmt.Println(auth)
 }

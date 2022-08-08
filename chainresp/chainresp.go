@@ -47,7 +47,7 @@ type TxData struct {
 	Message string `json:"message"`
 	Data    struct {
 		RetCode int    `json:"retCode"`
-		Hash    string `json:"hash"`
+		Hash    string `json:"hash"` //返回的hash
 	} `json:"data"`
 }
 

@@ -20,6 +20,8 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
 	"github.com/valyala/fasthttp"
+	"log"
+	"regexp"
 	"time"
 )
 
@@ -30,9 +32,9 @@ type Chain struct {
 	Address    common.Address `json:"address"`
 }
 
-func NewChain(url string, privatekey *ecdsa.PrivateKey, address common.Address) (*Chain, error) {
+func NewChain(url string, privatekey *ecdsa.PrivateKey, address common.Address, path string) (*Chain, error) {
 	//加载abi
-	abi, err := AbiNew()
+	abi, err := AbiNew(path)
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +98,31 @@ func (c *Chain) PostRealAuth(realName string, idCardNo string, address string) (
 }
 
 //转账cric
-func (c *Chain) TransferCric(transacetioninfo *chainproto.TransactionInfo) (txdata *chainresp.TxData, err error) {
-	resp, err := c.ChainCall("/chain/transferCric.json", "POST", transacetioninfo)
+func (c *Chain) TransferCric(transacetioninfo *chainproto.TransactionInfo, operateId string) (txdata *chainresp.TxData, err error) {
+	//时间戳
+	transacetioninfo.Body.Timestamp = time.Now().UnixMilli()
+	//版本转[]byte
+	decodeString, err := hexutil.Decode("0x562e32303232")
+	//版本
+	transacetioninfo.Body.Version = decodeString
+	//节点
+	transacetioninfo.Body.ChainId = 168
+
+	transacetioninfo.Body.Nonce, _ = c.GetNonce()
+
+	marshal, err := proto.Marshal(transacetioninfo.Body)
+
+	sign := crypto.Sign(marshal, c.Privatekey)
+
+	signature, _ := hex.DecodeString(sign)
+
+	transacetioninfo.Signature = signature
+
+	infobyte, err := proto.Marshal(transacetioninfo)
+
+	resp, err := c.Req("/chain/transferCric.json", "POST", map[string]string{}, map[string]interface{}{
+		"txData": hex.EncodeToString(infobyte),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +148,7 @@ func (c *Chain) TransactionInfo(hash string) (info *chainresp.TransactionInfo, e
 	return info, nil
 }
 
-func (c *Chain) ChainCall(url, method string, info *chainproto.TransactionInfo) ([]byte, error) {
+func (c *Chain) ChainCall(method string, info *chainproto.TransactionInfo, handler map[string]string, data map[string]interface{}) ([]byte, error) {
 	//时间戳
 	info.Body.Timestamp = time.Now().UnixMilli()
 	//版本转[]byte
@@ -132,6 +157,7 @@ func (c *Chain) ChainCall(url, method string, info *chainproto.TransactionInfo) 
 	info.Body.Version = decodeString
 	//节点
 	info.Body.ChainId = 168
+	info.Body.Nonce, _ = c.GetNonce()
 	marshal, err := proto.Marshal(info.Body)
 
 	sign := crypto.Sign(marshal, c.Privatekey)
@@ -141,10 +167,8 @@ func (c *Chain) ChainCall(url, method string, info *chainproto.TransactionInfo) 
 	info.Signature = signature
 
 	infobyte, err := proto.Marshal(info)
-
-	req, err := c.Req(url, method, map[string]string{}, map[string]interface{}{
-		"txData": hex.EncodeToString(infobyte),
-	})
+	data["data"] = hex.EncodeToString(infobyte)
+	req, err := c.Req("/chain/callcontract.json", method, handler, data)
 	if err != nil {
 
 		return nil, err
@@ -182,7 +206,15 @@ func (c *Chain) Req(url string, method string, header map[string]string, data ma
 		requestBody, _ := json.Marshal(data)
 		req.SetBody(requestBody)
 	}
-	req.Header.Set("x-request-id", uuid.New().String())
+	request_id := uuid.New().String()
+	fmt.Println(request_id)
+	reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+	if err != nil {
+		log.Fatal(err)
+	}
+	request_id = reg.ReplaceAllString(request_id, "")
+	fmt.Println("x-request-id:", request_id)
+	req.Header.Set("x-request-id", request_id)
 
 	req.SetRequestURI(url)
 

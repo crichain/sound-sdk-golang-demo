@@ -7,40 +7,35 @@ package utils
 import (
 	"fmt"
 	"math/big"
-	"strconv"
+	"time"
 )
 
-//转换金额
-//s: 金额 18位
-//hex 进制 默认16进制
-func ToBigInt(s string, hex int) (*big.Int, bool) {
-	if s == "" {
-		return nil, false
-	}
-	if hex == 0 {
-		hex = 16
-	}
-	return new(big.Int).SetString(s, hex)
+var Number = 0
+
+// ToMoney 转换金额
+//把10进制金额转换为系统金额
+//如传0.01 会被转换为10000000000000000
+func ToMoney(money float64) *big.Int {
+
+	bigval := new(big.Float)
+	bigval.SetFloat64(money)
+	coin := new(big.Float)
+	coin.SetInt(big.NewInt(1000000000000000000))
+
+	bigval.Mul(bigval, coin)
+
+	result := new(big.Int)
+	bigval.Int(result)
+
+	return result
 }
 
-//转换金额
-//
-func ToMoney(money string) *big.Int {
-	//i := int64(32)
-	//x := 0xde0b6b3a7640000
-
-	float, err := strconv.ParseFloat(money, 16)
-	if err != nil {
-		return nil
+func OperateId() int64 {
+	if Number == 9999 {
+		Number = 0
+	} else {
+		Number = Number + 1
 	}
-	fmt.Println(float)
-	//fmt.Println(x*float)
-
-	//x := big.NewFloat(money)
-	//
-	//i2 := x.Mul(x, big.NewFloat(1000000000000000000))
-	//i3, _ := i2.Int64()
-	//s := strconv.FormatInt(i3, 16)
-	//fmt.Println(s)
-	return new(big.Int).SetInt64(1)
+	fmt.Println(fmt.Sprintf("%d0%04d", time.Now().UnixMicro(), Number))
+	return 0
 }

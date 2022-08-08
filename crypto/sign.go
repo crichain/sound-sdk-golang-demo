@@ -13,34 +13,25 @@ import (
 	"strings"
 )
 
+//签名
 func Sign(data []byte, prv *ecdsa.PrivateKey) string {
-	//if len(data) <= 2 {
-	//	return ""
-	//}
-	//if data[0:2] != "0x" {
-	//	data = fmt.Sprintf("%s%s", "0x", data)
-	//}
-	//aaaa, err := hexutil.Decode(data)
-	//if err != nil {
-	//	fmt.Println(err)
-	//}
-	//str := ""
-	//for _, v := range aaaa {
-	//	str = fmt.Sprintf("%s%s", str, string(v))
-	//}
+
 	sum256 := sha256.Sum256(data)
+
 	r, s, err := ecdsa.Sign(rand.Reader, prv, sum256[:])
+
 	if err != nil {
 		return ""
 	}
-	pub := FromECDSAPub(&prv.PublicKey)
+	pubkey := strings.ToLower(hex.EncodeToString(FromECDSAPub(&prv.PublicKey)))
+
 	addr := PubkeyToAddress(prv.PublicKey)
-	pubstring := strings.ToLower(hex.EncodeToString(pub))
+
 	rs := reverse(r.Bytes())
 
 	ys := reverse(s.Bytes())
 
-	return fmt.Sprintf("%s%s%s%s", pubstring, strings.ToLower(addr.Hex()[2:]), hex.EncodeToString(rs)[0:64], hex.EncodeToString(ys)[0:64])
+	return fmt.Sprintf("%s%s%s%s", pubkey, strings.ToLower(addr.Hex()[2:]), hex.EncodeToString(rs)[0:64], hex.EncodeToString(ys)[0:64])
 
 }
 
