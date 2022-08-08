@@ -4,11 +4,14 @@
  */
 package utils
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestOperateId(t *testing.T) {
-	for i := 0; i < 1; i++ {
-		OperateId()
+	for i := 0; i < 100; i++ {
+		fmt.Println(OperateId())
 	}
 
 }

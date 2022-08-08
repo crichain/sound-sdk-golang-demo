@@ -7,6 +7,7 @@ package utils
 import (
 	"fmt"
 	"math/big"
+	"math/rand"
 	"time"
 )
 
@@ -30,12 +31,15 @@ func ToMoney(money float64) *big.Int {
 	return result
 }
 
-func OperateId() int64 {
+func OperateId() string {
+
+	//所以每次随机数都是随机的
+	rand.Seed(time.Now().UnixNano())
+
 	if Number == 9999 {
 		Number = 0
 	} else {
 		Number = Number + 1
 	}
-	fmt.Println(fmt.Sprintf("%d0%04d", time.Now().UnixMicro(), Number))
-	return 0
+	return fmt.Sprintf("%d%03d%04d", time.Now().UnixMicro(), rand.Intn(999), Number)
 }

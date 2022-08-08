@@ -68,14 +68,11 @@ func TestChain_TransferCric(t *testing.T) {
 	}
 
 	data.Amount = amount
-	//1659696753084
-	//1659771382947
-	//data.InnerCodetype = 0
 
 	info := chainproto.TransactionInfo{
 		Body: &data,
 	}
-	cric, err := chain.TransferCric(&info, "123123")
+	cric, err := chain.TransferCric(&info, utils.OperateId())
 	fmt.Println(cric)
 	if err != nil {
 		return

@@ -27,26 +27,21 @@
 # 调用示例
 ### 创建实例
 ```
-  func TsNewChain() *Chain {
-	//加载私钥
-	toECDSA, err := crypto.HexToECDSA("4e4e8c93e1774c4100a2edda3a11960551ba6f083672f88fdbd9863a7f66cbc9")
+  ftoECDSA, err := crypto.HexToECDSA("4e4e8c93e1774c4100a2edda3a11960551ba6f083672f88fdbd9863a7f66cbc9")
 	if err != nil {
 		panic("加载私钥报错")
 	}
 	formaddress := crypto.PubkeyToAddress(toECDSA.PublicKey)
-	chain, err := NewChain(Url, toECDSA, formaddress)
+	chain, err := NewChain(Url, toECDSA, formaddress, "abi.abi")
 	if err != nil {
 		return nil
 	}
 	return chain
-}
-
 ```
 
 ### 转账cric
 ```
-     
-	chain := TsNewChain()
+   chain := TsNewChain()
 	data := chainproto.TransactionBody{}
 	decode, err := hexutil.Decode(chain.Address.String())
 	if err != nil {
@@ -59,15 +54,19 @@
 	data.Address = decode
 	data.Recipient = toaddress
 	data.To = toaddress
+
 	amount, err := hexutil.Decode(hexutil.Encode(utils.ToMoney(1000).Bytes()))
 	if err != nil {
 		return
 	}
+
 	data.Amount = amount
+
+
 	info := chainproto.TransactionInfo{
 		Body: &data,
 	}
-	cric, err := chain.TransferCric(&info)
+	cric, err := chain.TransferCric(&info, utils.OperateId())
 	fmt.Println(cric)
 	if err != nil {
 		return
@@ -102,82 +101,125 @@ info, err := chain.TransactionInfo("0x8478b00a085bcbc3400bfc39e49bfc0f2402ca7ea8
 ### 铸造
 ```go
 	chain := TsNewChain()
-	mint, err := chain.Mint("0xce7e273ed4081e6309664734dc7a162e2e20e6cd", "cbc657068a8e34d905cd7af6b06c9859133814a7", "https://ipfs.infura.io/ipfs/QmbApAkdkGj4jFu6Jr2thcNHraRBYJ7nEL7cvpabM7bLcK")
-	if err != nil {
-		return
-	}
-	fmt.Println(mint)
+    mint, err := chain.Mint(common.HexToAddress("0x06e81b2bc890f56d496e9938f1a8769518496d24"), "0xce7e273ed4081e6309664734dc7a162e2e20e6cd", big.NewInt(129), "https://ipfs.infura.io/ipfs/QmbApAkdkGj4jFu6Jr2thcNHraRBYJ7nEL7cvpabM7bLcK", utils.OperateId())
+    if err != nil {
+    return
+    }
+    fmt.Println(mint)
 ```
 ### 转账
 ```go
 	chain := TsNewChain()
-	transfer, err := chain.SafeTransfer(common.HexToAddress("0x61d4c124df65ba081992ff2a8c77c67a8b3cb77c"), "0xce7e273ed4081e6309664734dc7a162e2e20e6cd", "cbc657068a8e34d905cd7af6b06c9859133814a7")
-	if err != nil {
-		return
-	}
-	fmt.Println(transfer)
+    transfer, err := chain.SafeTransfer(common.HexToAddress("0x61d4c124df65ba081992ff2a8c77c67a8b3cb77c"), "0xce7e273ed4081e6309664734dc7a162e2e20e6cd", big.NewInt(128), utils.OperateId())
+    if err != nil {
+    return
+    }
+    fmt.Println(transfer)
 ```
 ### 销毁
 ```go
     chain := TsNewChain()
-	burn, err := chain.Burn("cbc657068a8e34d905cd7af6b06c9859133814a7", "0xce7e273ed4081e6309664734dc7a162e2e20e6cd")
-	if err != nil {
-		return
-	}
-	fmt.Println(burn)
+    burn, err := chain.Burn(big.NewInt(125), "0xce7e273ed4081e6309664734dc7a162e2e20e6cd", utils.OperateId())
+    if err != nil {
+    return
+    }
+    fmt.Println(burn)
 ```
 
 ### 获取token
 ```go
-    chain := TsNewChain()
-	uri, err := chain.TokenURI("cbc657068a8e34d905cd7af6b06c9859133814a7", "0xce7e273ed4081e6309664734dc7a162e2e20e6cd")
-	if err != nil {
-		return
-	}
-	fmt.Println(uri)
+   chain := TsNewChain() 
+   uri, err := chain.TokenURI(big.NewInt(127), "0xce7e273ed4081e6309664734dc7a162e2e20e6cd", utils.OperateId())
+   if err != nil {
+        return
+   }
+   fmt.Println(uri)
 ```
 
-### 添加白名单
-```go
-    chain := TsNewChain()
-	whilelist, err := chain.AddWhiteList(common.HexToAddress("0x61d4c124df65ba081992ff2a8c77c67a8b3cb77c"), "0xce7e273ed4081e6309664734dc7a162e2e20e6cd")
-	if err != nil {
-		return
-	}
-	fmt.Println(whilelist)
-```
-### 获取白名单
-```go
-    chain := TsNewChain()
-	list, err := chain.GetWhiteList("1", "0xce7e273ed4081e6309664734dc7a162e2e20e6cd")
-	if err != nil {
-		return
-	}
-	fmt.Println(list)
-```
-### inwhite
-```go
-    chain := TsNewChain()
-	inwhite, err := chain.InWhiteList(common.HexToAddress("0x61d4c124df65ba081992ff2a8c77c67a8b3cb77c"), "0xce7e273ed4081e6309664734dc7a162e2e20e6cd")
-	if err != nil {
-		return
-	}
-	fmt.Println(inwhite)
-```
-### 删除白名单
-```go
-    chain := TsNewChain()
-	inwhite, err := chain.DelWhiteList(common.HexToAddress("0x61d4c124df65ba081992ff2a8c77c67a8b3cb77c"), "0xce7e273ed4081e6309664734dc7a162e2e20e6cd")
-	if err != nil {
-		return
-	}
-	fmt.Println(inwhite)
-```
-### 授权
-```go
-    approval, err := TsNewChain().SetApprovalForAll(common.HexToAddress("0x61d4c124df65ba081992ff2a8c77c67a8b3cb77c"), true, "0xce7e273ed4081e6309664734dc7a162e2e20e6cd")
-	if err != nil {
-		return
-	}
-	fmt.Println(approval)
-```
+[//]: # (### 添加白名单)
+
+[//]: # (```go)
+
+[//]: # (    chain := TsNewChain&#40;&#41;)
+
+[//]: # (	whilelist, err := chain.AddWhiteList&#40;common.HexToAddress&#40;"0x61d4c124df65ba081992ff2a8c77c67a8b3cb77c"&#41;, "0xce7e273ed4081e6309664734dc7a162e2e20e6cd"&#41;)
+
+[//]: # (	if err != nil {)
+
+[//]: # (		return)
+
+[//]: # (	})
+
+[//]: # (	fmt.Println&#40;whilelist&#41;)
+
+[//]: # (```)
+
+[//]: # (### 获取白名单)
+
+[//]: # (```go)
+
+[//]: # (    chain := TsNewChain&#40;&#41;)
+
+[//]: # (	list, err := chain.GetWhiteList&#40;"1", "0xce7e273ed4081e6309664734dc7a162e2e20e6cd"&#41;)
+
+[//]: # (	if err != nil {)
+
+[//]: # (		return)
+
+[//]: # (	})
+
+[//]: # (	fmt.Println&#40;list&#41;)
+
+[//]: # (```)
+
+[//]: # (### inwhite)
+
+[//]: # (```go)
+
+[//]: # (    chain := TsNewChain&#40;&#41;)
+
+[//]: # (	inwhite, err := chain.InWhiteList&#40;common.HexToAddress&#40;"0x61d4c124df65ba081992ff2a8c77c67a8b3cb77c"&#41;, "0xce7e273ed4081e6309664734dc7a162e2e20e6cd"&#41;)
+
+[//]: # (	if err != nil {)
+
+[//]: # (		return)
+
+[//]: # (	})
+
+[//]: # (	fmt.Println&#40;inwhite&#41;)
+
+[//]: # (```)
+
+[//]: # (### 删除白名单)
+
+[//]: # (```go)
+
+[//]: # (    chain := TsNewChain&#40;&#41;)
+
+[//]: # (	inwhite, err := chain.DelWhiteList&#40;common.HexToAddress&#40;"0x61d4c124df65ba081992ff2a8c77c67a8b3cb77c"&#41;, "0xce7e273ed4081e6309664734dc7a162e2e20e6cd"&#41;)
+
+[//]: # (	if err != nil {)
+
+[//]: # (		return)
+
+[//]: # (	})
+
+[//]: # (	fmt.Println&#40;inwhite&#41;)
+
+[//]: # (```)
+
+[//]: # (### 授权)
+
+[//]: # (```go)
+
+[//]: # (    approval, err := TsNewChain&#40;&#41;.SetApprovalForAll&#40;common.HexToAddress&#40;"0x61d4c124df65ba081992ff2a8c77c67a8b3cb77c"&#41;, true, "0xce7e273ed4081e6309664734dc7a162e2e20e6cd"&#41;)
+
+[//]: # (	if err != nil {)
+
+[//]: # (		return)
+
+[//]: # (	})
+
+[//]: # (	fmt.Println&#40;approval&#41;)
+
+[//]: # (```)
