@@ -31,7 +31,7 @@ func TsNewChain() *Chain {
 	return chain
 }
 
-//获取测试币
+// 获取测试币
 func TestChain_GetChainFaucet(t *testing.T) {
 	chain := TsNewChain()
 	faucet, err := chain.GetChainFaucet()
@@ -41,7 +41,7 @@ func TestChain_GetChainFaucet(t *testing.T) {
 	fmt.Println(faucet)
 }
 
-//转账cric
+// 转账cric
 func TestChain_TransferCric(t *testing.T) {
 
 	chain := TsNewChain()
@@ -76,7 +76,7 @@ func TestChain_TransferCric(t *testing.T) {
 
 }
 
-//获取用户信息
+// 获取用户信息
 func TestChain_GetAccount(t *testing.T) {
 	chain := TsNewChain()
 	account, err := chain.GetAccount()
@@ -86,7 +86,7 @@ func TestChain_GetAccount(t *testing.T) {
 	fmt.Println(account)
 }
 
-//获取交易详情
+// 获取交易详情
 func TestChain_TransactionInfo(t *testing.T) {
 	ch := TsNewChain()
 	info, err := ch.TransactionInfo("")
@@ -96,7 +96,7 @@ func TestChain_TransactionInfo(t *testing.T) {
 	fmt.Println(info)
 }
 
-//实名认证
+// 实名认证
 func TestChain_PostRealAuth(t *testing.T) {
 	chain := TsNewChain()
 	auth, err := chain.PostRealAuth("", "", "")

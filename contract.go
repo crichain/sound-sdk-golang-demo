@@ -15,19 +15,26 @@ import (
 
 const functionType = "tx"
 
-//  Mint
+// Mint 铸造
 //  @Description: 铸造
 //  @receiver c
 //  @param contract 合约地址
 //  @param tokenid token
 //  @param uri 铸造链接
+//  @param operateId 操作id
+//  @param nonce 不传则自动获取（如追求性能可自己维护 nonce）
 //  @return resp 返回参数
 //  @return err 返回error
 //
-func (c *Chain) Mint(address common.Address, contract string, tokenid *big.Int, uri string, operateId string) (resp *chainresp.TxData, err error) {
-	nonce, err := c.GetNonce()
-	if err != nil {
-		return
+func (c *Chain) Mint(address common.Address, contract string, tokenid *big.Int, uri string, operateId string, nonce *int64) (resp *chainresp.TxData, err error) {
+	if nonce == nil {
+		accountNonce, accountErr := c.GetNonce()
+		if accountErr != nil {
+			err = accountErr
+			return
+		}
+
+		nonce = &accountNonce
 	}
 
 	mint, err := c.Abi.SafeMint(address, tokenid, uri)
@@ -39,7 +46,7 @@ func (c *Chain) Mint(address common.Address, contract string, tokenid *big.Int, 
 	data.To = address.Bytes()
 	data.Address = c.Address.Bytes()
 	data.Recipient, _ = hexutil.Decode(contract)
-	data.Nonce = nonce
+	data.Nonce = *nonce
 	info := chainproto.TransactionInfo{
 		Body: &data,
 	}
@@ -60,17 +67,27 @@ func (c *Chain) Mint(address common.Address, contract string, tokenid *big.Int, 
 
 }
 
-//
-//  SafeTransfer
+// SafeTransfer
 //  @Description: 从当前调用者地址转账到指定地址
 //  @receiver c
 //  @param toaddress 转账地址
 //  @param contract 合约地址
 //  @param tokenId tokenid
+//  @param operateId 操作id
+//  @param nonce 不传则自动获取（如追求性能可自己维护 nonce）
 //  @return tx 返回hash
 //  @return err 错误信息
 //
-func (c *Chain) SafeTransfer(toaddress common.Address, contract string, tokenid *big.Int, operateId string) (tx *chainresp.TxData, err error) {
+func (c *Chain) SafeTransfer(toaddress common.Address, contract string, tokenid *big.Int, operateId string, nonce *int64) (tx *chainresp.TxData, err error) {
+	if nonce == nil {
+		accountNonce, accountErr := c.GetNonce()
+		if accountErr != nil {
+			err = accountErr
+			return
+		}
+
+		nonce = &accountNonce
+	}
 
 	hexcode, err := c.Abi.SafeTransfer(c.Address, toaddress, tokenid)
 	if err != nil {
@@ -82,7 +99,7 @@ func (c *Chain) SafeTransfer(toaddress common.Address, contract string, tokenid 
 	data.To = toaddress.Bytes()
 	data.Address = c.Address.Bytes()
 	data.Recipient, _ = hexutil.Decode(contract)
-	data.Nonce, _ = c.GetNonce()
+	data.Nonce = *nonce
 	info := chainproto.TransactionInfo{
 		Body: &data,
 	}
@@ -185,7 +202,7 @@ func (c *Chain) Burn(tokenId *big.Int, contract string, operateId string) (tx *c
 
 }
 
-//获取tokenuri
+// 获取tokenuri
 func (c *Chain) TokenURI(tokenId *big.Int, contract string, operateId string) (tx *chainresp.TxData, err error) {
 
 	hexcode, err := c.Abi.TokenURI(tokenId)
@@ -219,9 +236,9 @@ func (c *Chain) TokenURI(tokenId *big.Int, contract string, operateId string) (t
 
 }
 
-//合约授权
-//operator: 操作人员
-//approved:是否核准
+// 合约授权
+// operator: 操作人员
+// approved:是否核准
 func (c *Chain) SetApprovalForAll(operator common.Address, approved bool, contract string, operateId string) (tx *chainresp.TxData, err error) {
 
 	hexcode, err := c.Abi.SetApprovalForAll(operator, approved)
@@ -253,8 +270,8 @@ func (c *Chain) SetApprovalForAll(operator common.Address, approved bool, contra
 
 }
 
-//添加白名单
-//address 白名单地址
+// 添加白名单
+// address 白名单地址
 func (c *Chain) addWhiteList(address common.Address, contract string, operateId string) (tx *chainresp.TxData, err error) {
 
 	hexcode, err := c.Abi.AddWhiteList(address)
@@ -286,7 +303,7 @@ func (c *Chain) addWhiteList(address common.Address, contract string, operateId 
 
 }
 
-//删除白名单
+// 删除白名单
 func (c *Chain) delWhiteList(address common.Address, contract string, operateId string) (tx *chainresp.TxData, err error) {
 	hexcode, err := c.Abi.DelWhiteList(address)
 	if err != nil {
@@ -317,9 +334,9 @@ func (c *Chain) delWhiteList(address common.Address, contract string, operateId 
 
 }
 
-//获取白名单
-//index 位置
-//contract 合约地址
+// 获取白名单
+// index 位置
+// contract 合约地址
 func (c *Chain) getWhiteList(index *big.Int, contract string, operateId string) (tx *chainresp.TxData, err error) {
 
 	hexcode, err := c.Abi.GetWhiteList(index)
@@ -353,8 +370,8 @@ func (c *Chain) getWhiteList(index *big.Int, contract string, operateId string) 
 
 }
 
-//inWhiteList
-//是否在白名单中
+// inWhiteList
+// 是否在白名单中
 func (c *Chain) inWhiteList(address common.Address, contract string, operateId string) (tx *chainresp.TxData, err error) {
 	hexcode, err := c.Abi.InWhiteList(address)
 	if err != nil {

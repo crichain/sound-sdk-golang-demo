@@ -12,10 +12,12 @@ import (
 	"testing"
 )
 
-//铸造
+// 铸造
 func TestMint(t *testing.T) {
 	chain := TsNewChain()
-	mint, err := chain.Mint(common.HexToAddress(""), "", big.NewInt(129), "", utils.OperateId())
+	// i := int64(8888)
+
+	mint, err := chain.Mint(common.HexToAddress(""), "", big.NewInt(129), "", utils.OperateId(), nil)
 	if err != nil {
 		return
 	}
@@ -23,17 +25,17 @@ func TestMint(t *testing.T) {
 
 }
 
-//转账
+// 转账
 func TestChain_SafeTransfer(t *testing.T) {
 	chain := TsNewChain()
-	transfer, err := chain.SafeTransfer(common.HexToAddress(""), "", big.NewInt(128), utils.OperateId())
+	transfer, err := chain.SafeTransfer(common.HexToAddress(""), "", big.NewInt(128), utils.OperateId(), nil)
 	if err != nil {
 		return
 	}
 	fmt.Println(transfer)
 }
 
-//从某个地址转移到某个地址
+// 从某个地址转移到某个地址
 func TestChain_SafeTransferForm(t *testing.T) {
 	chain := TsNewChain()
 	transfer, err := chain.SafeTransferForm(common.HexToAddress(""), common.HexToAddress(""), "", big.NewInt(127), utils.OperateId())
@@ -43,7 +45,7 @@ func TestChain_SafeTransferForm(t *testing.T) {
 	fmt.Println(transfer)
 }
 
-//销毁
+// 销毁
 func TestChain_Burn(t *testing.T) {
 	chain := TsNewChain()
 	burn, err := chain.Burn(big.NewInt(125), "", utils.OperateId())
@@ -53,7 +55,7 @@ func TestChain_Burn(t *testing.T) {
 	fmt.Println(burn)
 }
 
-//获取tokenid
+// 获取tokenid
 func TestChain_TokenURI(t *testing.T) {
 	chain := TsNewChain()
 	uri, err := chain.TokenURI(big.NewInt(127), "", utils.OperateId())
